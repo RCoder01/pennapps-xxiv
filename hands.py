@@ -16,7 +16,7 @@ class HandDetector():
     def findHands(self,img, draw = True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(imgRGB)
-        # print(results.multi_hand_landmarks)
+        # print(self.results.multi_hand_landmarks)
 
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
@@ -25,14 +25,15 @@ class HandDetector():
         return img
 
     def findPosition(self, img, handNo = 0, draw = True):
-
         lmlist = []
         if self.results.multi_hand_landmarks:
+            if handNo >= len(self.results.multi_hand_landmarks):
+                return []
             myHand = self.results.multi_hand_landmarks[handNo]
             for id, lm in enumerate(myHand.landmark):
                 h, w, c = img.shape
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                lmlist.append([id, cx, cy])
+                lmlist.append([id, lm.x, lm.y, lm.z])
                 if draw:
                     cv2.circle(img, (cx, cy), 3, (255, 0, 255), cv2.FILLED)
         return lmlist
@@ -46,9 +47,19 @@ def main():
     while True:
         success, img = cap.read()
         img = detector.findHands(img)
-        lmlist = detector.findPosition(img)
-        if len(lmlist) != 0:
-            print(lmlist[4])
+        hand1 = detector.findPosition(img)
+        hand2 = detector.findPosition(img, handNo=1)
+
+        if hand1:
+            tx, ty, tz = hand1[4][1:]
+            px, py, pz = hand1[20][1:]
+            # print(f'{x:.03}, \t{y:.03}, \t{z:.03}')
+            print(f'hand1: {"left" if px < tx else "right"}, {"top" if ty < 0.5 else "bottom"}')
+        if hand2:
+            tx, ty, tz = hand2[4][1:]
+            px, py, pz = hand2[20][1:]
+            # print(f'{x:.03}, \t{y:.03}, \t{z:.03}')
+            print(f'hand2: {"left" if px < tx else "right"}, {"top" if ty < 0.5 else "bottom"}')
 
         cTime = time.time()
         fps = 1 / (cTime - pTime)
@@ -58,6 +69,7 @@ def main():
 
         cv2.imshow("Image", img)
         cv2.waitKey(1)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
