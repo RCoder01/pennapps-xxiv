@@ -1,4 +1,5 @@
 import asyncio
+from viam.components.motor import Motor
 from viam.robot.client import RobotClient
 from viam.rpc.dial import Credentials, DialOptions
 
@@ -18,8 +19,13 @@ async def main():
 
     print('Resources:')
     print(robot.resource_names)
+    left = Motor.from_robot(robot=robot, name='left')
+    right = Motor.from_robot(robot=robot, name='right')
+    await asyncio.gather(
+        left.go_for(rpm=60, revolutions=1),
+        right.go_for(rpm=60, revolutions=1)
+    )
 
-    # Don't forget to close the robot when you're done!
     await robot.close()
 
 if __name__ == '__main__':
