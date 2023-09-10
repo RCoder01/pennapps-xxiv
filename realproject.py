@@ -32,7 +32,7 @@ for i in range(6):
         break
 
 
-input("\nI am thinking of a number between 1-1000. Guess and I will say over or under.\n")
+input("\nI am thinking of a number between 1-1000000. Guess and I will say over or under.\n")
 
 while True:
     rand = random.randint(0,1)
